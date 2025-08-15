@@ -74,6 +74,18 @@ def read_user(
     return db_user
 
 
+@app.delete("/users/{user_id}", response_model=schemas.User)
+def delete_user(
+    user_id: int,
+    db: Session = db_session,
+    current_user: models.User = Depends(get_current_user)
+):
+    user = crud.deactivate_user_and_transfer_items(db, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
 @app.post("/users/{user_id}/items/", response_model=schemas.Item)
 def create_item_for_user(
     user_id: int,

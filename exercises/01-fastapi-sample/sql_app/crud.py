@@ -44,3 +44,22 @@ def get_user_by_token(db: Session, token: str):
 
 def get_items_by_user(db: Session, user_id: int, skip: int = 0, limit: int = 100):
     return db.query(models.Item).filter(models.Item.owner_id == user_id).offset(skip).limit(limit).all()
+
+
+def deactivate_user_and_transfer_items(db: Session, user_id: int):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        return None
+    # Find the valid user with the smallest id (excluding the user being deleted)
+    new_owner = db.query(models.User).filter(models.User.is_active == True, models.User.id != user_id).order_by(models.User.id.asc()).first()
+    if not new_owner:
+        raise Exception("No valid user to transfer items to.")
+    # Transfer items
+    items = db.query(models.Item).filter(models.Item.owner_id == user_id).all()
+    for item in items:
+        item.owner_id = new_owner.id
+    # Deactivate user
+    user.is_active = False
+    db.commit()
+    db.refresh(user)
+    return user
