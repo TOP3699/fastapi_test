@@ -40,3 +40,7 @@ def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):
 
 def get_user_by_token(db: Session, token: str):
     return db.query(models.User).filter(models.User.api_token == token).first()
+
+
+def get_items_by_user(db: Session, user_id: int, skip: int = 0, limit: int = 100):
+    return db.query(models.Item).filter(models.Item.owner_id == user_id).offset(skip).limit(limit).all()
