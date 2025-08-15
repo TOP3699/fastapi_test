@@ -31,6 +31,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     is_active: bool
+    api_token: str
     items: List[Item] = []
 
     class Config:
